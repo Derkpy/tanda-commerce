@@ -1,5 +1,10 @@
+packages:
+  - backend
+  - web
+
 allowBuilds:
   '@prisma/engines': true
   esbuild: true
+  msgpackr-extract: false
   msw: true
   prisma: true

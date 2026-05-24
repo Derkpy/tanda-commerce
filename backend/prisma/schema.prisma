@@ -1,0 +1,154 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  idUser       Int      @id @default(autoincrement()) @map("id_user")
+  idBranch     Int      @map("id_branch")
+  name         String   @db.VarChar(120)
+  email        String   @unique @db.VarChar(180)
+  passwordHash String   @map("password_hash") @db.VarChar(255)
+  phone        String?  @db.VarChar(30)
+  role         String   @default("admin") @db.VarChar(45)
+  status       String   @default("active") @db.VarChar(45)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  branch Branch @relation(fields: [idBranch], references: [idBranch], onDelete: Restrict, onUpdate: Cascade)
+
+  @@index([idBranch])
+  @@map("users")
+}
+
+model Branch {
+  idBranch     Int    @id @default(autoincrement()) @map("id_branch")
+  name         String @db.VarChar(120)
+  localitation String @db.VarChar(180)
+
+  users  User[]
+  sales  Sale[]
+  groups ProductGroup[]
+
+  @@map("branch")
+}
+
+model Client {
+  idClient       Int     @id @default(autoincrement()) @map("id_client")
+  name           String  @db.VarChar(120)
+  statusSingular String? @map("status_singular") @db.VarChar(45)
+  statusGlobal   String? @map("status_global") @db.VarChar(45)
+
+  sales  Sale[]
+  tandas Tanda[]
+
+  @@map("client")
+}
+
+model Sale {
+  idSales  Int      @id @default(autoincrement()) @map("id_sales")
+  idClient Int      @map("id_client")
+  idBranch Int      @map("id_branch")
+  total    Decimal  @db.Decimal(12, 2)
+  date     DateTime @db.Date
+
+  client  Client       @relation(fields: [idClient], references: [idClient], onDelete: Restrict, onUpdate: Cascade)
+  branch  Branch       @relation(fields: [idBranch], references: [idBranch], onDelete: Restrict, onUpdate: Cascade)
+  details SaleDetail[]
+  tanda   Tanda?
+
+  @@index([idClient])
+  @@index([idBranch])
+  @@map("sales")
+}
+
+model SaleDetail {
+  idSaleDetails Int     @id @default(autoincrement()) @map("id_sale_details")
+  idSale        Int     @map("id_sale")
+  idProduct     Int     @map("id_product")
+  quantity      Int
+  price         Decimal @db.Decimal(12, 2)
+
+  sale    Sale    @relation(fields: [idSale], references: [idSales], onDelete: Restrict, onUpdate: Cascade)
+  product Product @relation(fields: [idProduct], references: [idProduct], onDelete: Restrict, onUpdate: Cascade)
+
+  @@index([idSale])
+  @@index([idProduct])
+  @@map("sale_details")
+}
+
+model ProductGroup {
+  idGroup   Int    @id @default(autoincrement()) @map("id_group")
+  idBranch  Int    @map("id_branch")
+  groupName String @map("group_name") @db.VarChar(80)
+
+  branch     Branch     @relation(fields: [idBranch], references: [idBranch], onDelete: Restrict, onUpdate: Cascade)
+  categories Category[]
+
+  @@index([idBranch])
+  @@map("group")
+}
+
+model Category {
+  idCategory   Int    @id @default(autoincrement()) @map("id_category")
+  idGroup      Int    @map("id_group")
+  categoryName String @map("category_name") @db.VarChar(80)
+  code         String @unique @db.VarChar(45)
+
+  group    ProductGroup @relation(fields: [idGroup], references: [idGroup], onDelete: Restrict, onUpdate: Cascade)
+  products Product[]
+
+  @@index([idGroup])
+  @@map("category")
+}
+
+model Product {
+  idProduct    Int     @id @default(autoincrement()) @map("id_product")
+  idCategory   Int     @map("id_category")
+  nameProducts String  @map("name_products") @db.VarChar(120)
+  code         String  @unique @db.VarChar(45)
+  priceProduct Decimal @map("price_product") @db.Decimal(12, 2)
+
+  category    Category     @relation(fields: [idCategory], references: [idCategory], onDelete: Restrict, onUpdate: Cascade)
+  saleDetails SaleDetail[]
+
+  @@index([idCategory])
+  @@map("products")
+}
+
+model Tanda {
+  idTanda   Int      @id @default(autoincrement()) @map("id_tanda")
+  idSale    Int      @unique @map("id_sale")
+  idClient  Int      @map("id_client")
+  dateEnd   DateTime @map("date_end") @db.Date
+  dateStart DateTime @map("date_start") @db.Date
+  status    String   @db.VarChar(45)
+  total     Decimal  @db.Decimal(12, 2)
+
+  sale     Sale           @relation(fields: [idSale], references: [idSales], onDelete: Restrict, onUpdate: Cascade)
+  client   Client         @relation(fields: [idClient], references: [idClient], onDelete: Restrict, onUpdate: Cascade)
+  payments PaymentTanda[]
+
+  @@index([idClient])
+  @@map("tanda")
+}
+
+model PaymentTanda {
+  idPaymentTanda    Int       @id @default(autoincrement()) @map("id_payment_tanda")
+  idTanda           Int       @map("id_tanda")
+  status            String    @db.VarChar(45)
+  paymentDate       DateTime  @map("payment_date") @db.Date
+  paidDate          DateTime? @map("paid_date") @db.Date
+  paymentTotal      Decimal   @map("payment_total") @db.Decimal(12, 2)
+  paidTotal         Decimal?  @map("paid_total") @db.Decimal(12, 2)
+  paymentTandaTotal Decimal   @map("payment_tanda_total") @db.Decimal(12, 2)
+
+  tanda Tanda @relation(fields: [idTanda], references: [idTanda], onDelete: Restrict, onUpdate: Cascade)
+
+  @@index([idTanda])
+  @@map("payment_tanda")
+}
