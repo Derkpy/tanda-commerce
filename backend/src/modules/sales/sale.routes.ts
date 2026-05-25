@@ -10,6 +10,11 @@ export const saleRouter = Router();
 
 saleRouter.get("/", cacheMiddleware(), asyncHandler(saleController.list));
 saleRouter.post(
+  "/build/preview",
+  validateBody(buildSaleSchema),
+  asyncHandler(saleController.previewBuild),
+);
+saleRouter.post(
   "/build",
   validateBody(buildSaleSchema),
   asyncHandler(saleController.build),

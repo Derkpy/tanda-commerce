@@ -1,10 +1,16 @@
 import { prisma } from "../../config/prisma.js";
 import { ApiError } from "../../errors/api-error.js";
+import type { AuthUser } from "../../types/auth.js";
 import type { CreateCategoryInput } from "./category.schema.js";
 
 export const categoryService = {
-  list() {
+  list(auth: AuthUser) {
     return prisma.category.findMany({
+      where: {
+        group: {
+          idBranch: auth.idBranch,
+        },
+      },
       orderBy: { idCategory: "asc" },
       include: {
         group: true,
@@ -12,9 +18,12 @@ export const categoryService = {
     });
   },
 
-  async create(input: CreateCategoryInput) {
-    const group = await prisma.productGroup.findUnique({
-      where: { idGroup: input.idGroup },
+  async create(input: CreateCategoryInput, auth: AuthUser) {
+    const group = await prisma.productGroup.findFirst({
+      where: {
+        idGroup: input.idGroup,
+        idBranch: auth.idBranch,
+      },
       select: { idGroup: true },
     });
 

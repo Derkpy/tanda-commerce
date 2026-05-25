@@ -5,7 +5,10 @@ import { redisCache } from "../config/redis.js";
 export const cacheMiddleware =
   (ttlSeconds = env.CACHE_TTL_SECONDS) =>
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    const key = `cache:${req.originalUrl}`;
+    const scope = req.user
+      ? `branch:${req.user.idBranch}:user:${req.user.idUser}`
+      : "public";
+    const key = `cache:${req.originalUrl}:${scope}`;
 
     const cached = await redisCache.get(key);
 

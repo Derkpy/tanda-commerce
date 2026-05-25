@@ -2,8 +2,7 @@ import { z } from "zod";
 
 export const buildSaleSchema = z
   .object({
-    clientId: z.coerce.number().int().positive().optional(),
-    branchId: z.coerce.number().int().positive().optional(),
+    clientId: z.coerce.number().int().positive(),
     products: z
       .array(
         z
@@ -14,9 +13,11 @@ export const buildSaleSchema = z
           })
           .strict(),
       )
-      .optional(),
-    tandaConfig: z.record(z.string(), z.unknown()).optional(),
+      .min(1),
+    paymentCount: z.coerce.number().int().positive(),
+    paymentIntervalDays: z.coerce.number().int().min(3).max(15),
+    firstPaymentDate: z.string().trim().regex(/^\d{4}-\d{2}-\d{2}$/),
   })
-  .passthrough();
+  .strict();
 
 export type BuildSaleInput = z.infer<typeof buildSaleSchema>;

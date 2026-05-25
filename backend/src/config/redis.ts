@@ -74,6 +74,24 @@ class RedisCache {
     }
   }
 
+  static async disconnect(): Promise<void> {
+    const client = RedisCache.client;
+    RedisCache.client = null;
+    RedisCache.connecting = null;
+
+    if (!client) {
+      return;
+    }
+
+    try {
+      if (client.isOpen) {
+        await client.quit();
+      }
+    } catch (error) {
+      logger.warn({ error }, "Redis disconnect failed");
+    }
+  }
+
   private static async getClient(): Promise<RedisClientType | null> {
     if (RedisCache.client?.isOpen) {
       return RedisCache.client;

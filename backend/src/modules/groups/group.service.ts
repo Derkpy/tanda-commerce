@@ -1,10 +1,14 @@
 import { prisma } from "../../config/prisma.js";
 import { ApiError } from "../../errors/api-error.js";
+import type { AuthUser } from "../../types/auth.js";
 import type { CreateGroupInput } from "./group.schema.js";
 
 export const groupService = {
-  list() {
+  list(auth: AuthUser) {
     return prisma.productGroup.findMany({
+      where: {
+        idBranch: auth.idBranch,
+      },
       orderBy: { idGroup: "asc" },
       include: {
         branch: true,
@@ -12,9 +16,9 @@ export const groupService = {
     });
   },
 
-  async create(input: CreateGroupInput) {
+  async create(input: CreateGroupInput, auth: AuthUser) {
     const branch = await prisma.branch.findUnique({
-      where: { idBranch: input.idBranch },
+      where: { idBranch: auth.idBranch },
       select: { idBranch: true },
     });
 
@@ -23,7 +27,10 @@ export const groupService = {
     }
 
     return prisma.productGroup.create({
-      data: input,
+      data: {
+        groupName: input.groupName,
+        idBranch: auth.idBranch,
+      },
     });
   },
 };

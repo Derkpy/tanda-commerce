@@ -12,6 +12,7 @@ model User {
   idBranch     Int      @map("id_branch")
   name         String   @db.VarChar(120)
   email        String   @unique @db.VarChar(180)
+  username     String   @unique @db.VarChar(80)
   passwordHash String   @map("password_hash") @db.VarChar(255)
   phone        String?  @db.VarChar(30)
   role         String   @default("admin") @db.VarChar(45)
@@ -19,10 +20,29 @@ model User {
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
-  branch Branch @relation(fields: [idBranch], references: [idBranch], onDelete: Restrict, onUpdate: Cascade)
+  branch        Branch         @relation(fields: [idBranch], references: [idBranch], onDelete: Restrict, onUpdate: Cascade)
+  refreshTokens RefreshToken[]
 
   @@index([idBranch])
   @@map("users")
+}
+
+model RefreshToken {
+  idRefreshToken Int       @id @default(autoincrement()) @map("id_refresh_token")
+  idUser         Int       @map("id_user")
+  tokenHash      String    @map("token_hash") @db.VarChar(255)
+  expiresAt      DateTime  @map("expires_at")
+  revokedAt      DateTime? @map("revoked_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  ipAddress      String?   @map("ip_address") @db.VarChar(60)
+  userAgent      String?   @map("user_agent") @db.VarChar(255)
+
+  user User @relation(fields: [idUser], references: [idUser], onDelete: Cascade, onUpdate: Cascade)
+
+  @@unique([tokenHash])
+  @@index([idUser])
+  @@index([expiresAt])
+  @@map("refresh_token")
 }
 
 model Branch {
@@ -30,22 +50,26 @@ model Branch {
   name         String @db.VarChar(120)
   localitation String @db.VarChar(180)
 
-  users  User[]
-  sales  Sale[]
-  groups ProductGroup[]
+  clients Client[]
+  users   User[]
+  sales   Sale[]
+  groups  ProductGroup[]
 
   @@map("branch")
 }
 
 model Client {
   idClient       Int     @id @default(autoincrement()) @map("id_client")
+  idBranch       Int     @map("id_branch")
   name           String  @db.VarChar(120)
   statusSingular String? @map("status_singular") @db.VarChar(45)
   statusGlobal   String? @map("status_global") @db.VarChar(45)
 
+  branch Branch  @relation(fields: [idBranch], references: [idBranch], onDelete: Restrict, onUpdate: Cascade)
   sales  Sale[]
   tandas Tanda[]
 
+  @@index([idBranch])
   @@map("client")
 }
 
@@ -107,11 +131,11 @@ model Category {
 }
 
 model Product {
-  idProduct    Int     @id @default(autoincrement()) @map("id_product")
-  idCategory   Int     @map("id_category")
-  nameProducts String  @map("name_products") @db.VarChar(120)
-  code         String  @unique @db.VarChar(45)
-  priceProduct Decimal @map("price_product") @db.Decimal(12, 2)
+  idProduct    Int      @id @default(autoincrement()) @map("id_product")
+  idCategory   Int      @map("id_category")
+  nameProducts String   @map("name_products") @db.VarChar(120)
+  code         String   @unique @db.VarChar(45)
+  priceProduct Decimal? @map("price_product") @db.Decimal(12, 2)
 
   category    Category     @relation(fields: [idCategory], references: [idCategory], onDelete: Restrict, onUpdate: Cascade)
   saleDetails SaleDetail[]

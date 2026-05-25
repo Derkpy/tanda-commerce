@@ -1,0 +1,102 @@
+name: ci
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  test-build:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: system_tandas_ci
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d system_tandas_ci"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/system_tandas_ci
+      REDIS_URL: redis://127.0.0.1:6379
+      CACHE_TTL_SECONDS: 30
+      FRONTEND_URL: http://localhost:5173
+      CORS_ORIGINS: http://localhost:5173
+      REQUEST_BODY_LIMIT: 10kb
+      RATE_LIMIT_WINDOW_MS: 900000
+      RATE_LIMIT_MAX: 300
+      AUTH_RATE_LIMIT_WINDOW_MS: 900000
+      AUTH_LOGIN_RATE_LIMIT_MAX: 20
+      AUTH_REFRESH_RATE_LIMIT_MAX: 20
+      COOKIE_SAME_SITE: lax
+      JWT_ACCESS_SECRET: test-access-secret-that-is-at-least-thirty-two-chars
+      JWT_ACCESS_TTL_SECONDS: 900
+      JWT_REFRESH_SECRET: test-refresh-secret-that-is-at-least-thirty-two-chars
+      JWT_REFRESH_TTL_SECONDS: 2592000
+      RUN_INTEGRATION_TESTS: "true"
+      REDIS_INTEGRATION: "true"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          cache: pnpm
+          node-version: 22
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Prisma generate
+        run: pnpm --filter system-tandas-backend prisma generate
+
+      - name: Prisma migrate deploy
+        run: pnpm --filter system-tandas-backend prisma migrate deploy
+
+      - name: Backend typecheck
+        run: pnpm --filter system-tandas-backend typecheck
+
+      - name: Backend tests
+        run: pnpm --filter system-tandas-backend test
+
+      - name: Backend build
+        run: pnpm --filter system-tandas-backend build
+
+      - name: Web typecheck
+        run: pnpm --filter system-tandas-web typecheck
+
+      - name: Web tests
+        run: pnpm --filter system-tandas-web test:run
+
+      - name: Web build
+        run: pnpm --filter system-tandas-web build
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Docker build backend
+        run: docker build -f backend/Dockerfile -t system-tandas-backend:ci .
+
+      - name: Docker build web
+        run: docker build -f web/Dockerfile -t system-tandas-web:ci .

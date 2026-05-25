@@ -4,6 +4,8 @@ import { env } from "../config/env.js";
 import { logger } from "../config/logger.js";
 import { ApiError } from "../errors/api-error.js";
 
+const isProduction = env.NODE_ENV === "production";
+
 export const notFoundHandler: RequestHandler = (req, _res, next) => {
   next(new ApiError(404, `Route not found: ${req.method} ${req.originalUrl}`));
 };
@@ -12,7 +14,7 @@ export const errorHandler: ErrorRequestHandler = (error, _req, res, _next) => {
   if (error instanceof ZodError) {
     res.status(400).json({
       error: "Validation error",
-      details: error.issues,
+      ...(isProduction ? {} : { details: error.issues }),
     });
     return;
   }
@@ -20,7 +22,9 @@ export const errorHandler: ErrorRequestHandler = (error, _req, res, _next) => {
   if (error instanceof ApiError) {
     res.status(error.statusCode).json({
       error: error.message,
-      details: error.details,
+      ...(isProduction || error.details === undefined
+        ? {}
+        : { details: error.details }),
     });
     return;
   }

@@ -1,10 +1,14 @@
 import { prisma } from "../../config/prisma.js";
 import { ApiError } from "../../errors/api-error.js";
+import type { AuthUser } from "../../types/auth.js";
 
 export const userService = {
-  async findById(id: number) {
-    const user = await prisma.user.findUnique({
-      where: { idUser: id },
+  async findById(id: number, auth: AuthUser) {
+    const user = await prisma.user.findFirst({
+      where: {
+        idUser: id,
+        idBranch: auth.idBranch,
+      },
       select: {
         idUser: true,
         idBranch: true,
