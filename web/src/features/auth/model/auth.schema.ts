@@ -1,17 +1,18 @@
 import { z } from "zod";
+import { t } from "@/shared/lib/i18n";
 
 export const loginSchema = z.object({
   identifier: z
     .string()
     .trim()
-    .min(1, "Ingresa tu correo o usuario.")
-    .min(3, "El correo o usuario debe tener al menos 3 caracteres.")
-    .max(120, "El correo o usuario no puede exceder 120 caracteres."),
+    .min(1, t("auth.login.validation.identifier_required"))
+    .min(3, t("auth.login.validation.identifier_min"))
+    .max(120, t("auth.login.validation.identifier_max")),
   password: z
     .string()
-    .min(1, "Ingresa tu contrasena.")
-    .min(8, "La contrasena debe tener al menos 8 caracteres.")
-    .max(128, "La contrasena no puede exceder 128 caracteres."),
+    .min(1, t("auth.login.validation.password_required"))
+    .min(8, t("auth.login.validation.password_min"))
+    .max(128, t("auth.login.validation.password_max")),
 });
 
 export const branchSchema = z
@@ -29,8 +30,11 @@ export const authUserSchema = z
     name: z.string(),
     email: z.string().email(),
     username: z.string(),
+    phone: z.string().nullable().optional(),
     role: z.string(),
     status: z.string(),
+    createdAt: z.string().optional(),
+    updatedAt: z.string().optional(),
     branch: branchSchema.optional(),
   })
   .strict();

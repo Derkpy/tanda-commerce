@@ -1,11 +1,12 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuthStore } from "@/features/auth/model/auth.store";
+import { t } from "@/shared/lib/i18n";
 
 function FullPageLoader() {
   return (
     <main className="flex min-h-screen items-center justify-center bg-neutral-50 px-4">
       <div className="rounded-lg border border-neutral-200 bg-white px-5 py-4 text-sm font-medium text-neutral-700 shadow-sm">
-        Cargando sesion
+        {t("app.loading_session")}
       </div>
     </main>
   );

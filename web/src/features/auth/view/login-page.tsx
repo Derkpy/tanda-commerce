@@ -3,6 +3,7 @@ import { Alert } from "@/shared/ui/alert";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
+import { t } from "@/shared/lib/i18n";
 import { useLoginController } from "../controller/use-login-controller";
 
 export function LoginPage() {
@@ -23,17 +24,17 @@ export function LoginPage() {
         <div className="hidden border-r border-neutral-200 bg-[#10231f] p-8 text-white md:flex md:flex-col md:justify-between">
           <div>
             <p className="text-sm font-semibold text-emerald-200">
-              System Tandas
+              {t("app.system_tandas_name")}
             </p>
             <h1 className="mt-4 text-3xl font-semibold leading-tight">
-              Acceso operativo
+              {t("auth.login.hero_title")}
             </h1>
           </div>
 
           <div className="space-y-3 text-sm text-emerald-50/85">
-            <p>Sucursal, ventas y tandas en un solo panel.</p>
+            <p>{t("auth.login.hero_description")}</p>
             <p className="border-t border-white/15 pt-3">
-              Sesion protegida con cookies httpOnly del servidor.
+              {t("auth.login.hero_security_note")}
             </p>
           </div>
         </div>
@@ -41,10 +42,10 @@ export function LoginPage() {
         <div className="px-5 py-8 sm:px-10 md:px-12">
           <div className="mb-8">
             <p className="text-sm font-semibold text-emerald-700">
-              System Tandas
+              {t("app.system_tandas_name")}
             </p>
             <h2 className="mt-2 text-2xl font-semibold text-neutral-950">
-              Iniciar sesion
+              {t("auth.login.title")}
             </h2>
           </div>
 
@@ -52,7 +53,7 @@ export function LoginPage() {
             {serverError ? <Alert>{serverError}</Alert> : null}
 
             <div className="space-y-2">
-              <Label htmlFor="identifier">Correo o usuario</Label>
+              <Label htmlFor="identifier">{t("auth.login.identifier_label")}</Label>
               <div className="relative">
                 <UserRound
                   aria-hidden="true"
@@ -63,7 +64,7 @@ export function LoginPage() {
                   autoComplete="username"
                   aria-invalid={Boolean(errors.identifier)}
                   className="pl-9"
-                  placeholder="correo@dominio.com o usuario"
+                  placeholder={t("auth.login.identifier_placeholder")}
                   {...register("identifier")}
                 />
               </div>
@@ -75,7 +76,7 @@ export function LoginPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Contrasena</Label>
+              <Label htmlFor="password">{t("auth.login.password_label")}</Label>
               <div className="relative">
                 <LockKeyhole
                   aria-hidden="true"
@@ -86,15 +87,15 @@ export function LoginPage() {
                   autoComplete="current-password"
                   aria-invalid={Boolean(errors.password)}
                   className="pl-9 pr-11"
-                  placeholder="contrasena"
+                  placeholder={t("auth.login.password_placeholder")}
                   type={isPasswordVisible ? "text" : "password"}
                   {...register("password")}
                 />
                 <Button
                   aria-label={
                     isPasswordVisible
-                      ? "Ocultar contrasena"
-                      : "Mostrar contrasena"
+                      ? t("auth.login.hide_password")
+                      : t("auth.login.show_password")
                   }
                   className="absolute right-1 top-1/2 -translate-y-1/2"
                   onClick={togglePasswordVisibility}
@@ -115,7 +116,7 @@ export function LoginPage() {
             </div>
 
             <Button className="w-full" disabled={isSubmitting} type="submit">
-              {isSubmitting ? "Validando" : "Entrar"}
+              {isSubmitting ? t("auth.login.submitting") : t("auth.login.submit")}
             </Button>
           </form>
         </div>

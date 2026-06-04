@@ -1,0 +1,283 @@
+{
+  "app": {
+    "system_tandas_name": "System Tandas",
+    "loading_session": "Cargando sesion"
+  },
+  "auth": {
+    "logout": "Cerrar sesion",
+    "profile": "Perfil",
+    "settings": "Ajustes",
+    "fallback_user": "Usuario",
+    "fallback_role": "Administrador",
+    "login": {
+      "hero_title": "Acceso operativo",
+      "hero_description": "Sucursal, ventas y tandas en un solo panel.",
+      "hero_security_note": "Sesion protegida con cookies httpOnly del servidor.",
+      "title": "Iniciar sesion",
+      "identifier_label": "Correo o usuario",
+      "identifier_placeholder": "correo@dominio.com o usuario",
+      "password_label": "Contrasena",
+      "password_placeholder": "contrasena",
+      "hide_password": "Ocultar contrasena",
+      "show_password": "Mostrar contrasena",
+      "submitting": "Validando",
+      "submit": "Entrar",
+      "errors": {
+        "invalid_credentials": "No se pudo iniciar sesion con esas credenciales.",
+        "too_many_attempts": "Demasiados intentos. Intenta de nuevo mas tarde.",
+        "generic": "No se pudo iniciar sesion. Intenta de nuevo."
+      },
+      "validation": {
+        "identifier_required": "Ingresa tu correo o usuario.",
+        "identifier_min": "El correo o usuario debe tener al menos 3 caracteres.",
+        "identifier_max": "El correo o usuario no puede exceder 120 caracteres.",
+        "password_required": "Ingresa tu contrasena.",
+        "password_min": "La contrasena debe tener al menos 8 caracteres.",
+        "password_max": "La contrasena no puede exceder 128 caracteres."
+      }
+    }
+  },
+  "menu": {
+    "dashboard": "Panel de control",
+    "clients": "Clientes",
+    "tanda": "Tanda",
+    "products": "Productos",
+    "hide_sidebar": "Ocultar menu lateral",
+    "collapse_sidebar": "Colapsar menu lateral",
+    "toggle_sidebar": "Cambiar menu lateral",
+    "show_sidebar": "Mostrar menu lateral"
+  },
+  "dashboard": {
+    "sidebar_name": "ChonchoFlow",
+    "branch_name": "Ropa Guayabal",
+    "summary_badge": "Resumen comercial",
+    "summary_text": "Hola, {{name}}. Aqui tienes un resumen visual del movimiento de ventas y clientes.",
+    "charts": {
+      "category_sales": "Ventas por categoria",
+      "monthly_sales": "Ventas por mes",
+      "total": "Total",
+      "sales_fallback": "Ventas",
+      "ranges": {
+        "this_month": "Este mes",
+        "quarter": "Trimestre",
+        "this_year": "Este año"
+      },
+      "months": {
+        "jan": "Ene",
+        "feb": "Feb",
+        "mar": "Mar",
+        "apr": "Abr",
+        "may": "May",
+        "jun": "Jun",
+        "jul": "Jul",
+        "aug": "Ago",
+        "sep": "Sep",
+        "oct": "Oct",
+        "nov": "Nov",
+        "dec": "Dic"
+      }
+    },
+    "clients": {
+      "title": "Clientes que mas compran",
+      "description": "Clientes ordenados por valor de compra.",
+      "show_label": "Mostrar",
+      "clients_suffix": "clientes",
+      "showing": "Mostrando {{start}}-{{end}} de {{total}}",
+      "columns": {
+        "name": "Nombre",
+        "total": "Total",
+        "active_tandas": "Tandas activas",
+        "client_status": "Estado del cliente"
+      },
+      "pagination": {
+        "previous": "Pagina anterior",
+        "next": "Pagina siguiente"
+      }
+    }
+  },
+  "clients_view": {
+    "title_default": "Conoce mejor a tu cliente",
+    "title_selected": "Conoce mejor a {{name}}",
+    "status_label": "Status",
+    "clients_table": {
+      "title": "Clientes",
+      "columns": {
+        "name": "Cliente",
+        "purchase_status": "Status"
+      },
+      "pagination": {
+        "previous": "Clientes anteriores",
+        "next": "Clientes siguientes"
+      }
+    },
+    "status": {
+      "good": "Bueno",
+      "regular": "Regular",
+      "bad": "Malo"
+    },
+    "charts": {
+      "payment_compliance": "Cumplimiento de pagos",
+      "purchase_volume": "Volumen de compra",
+      "category_preference": "Preferencia por categoria",
+      "must_pay": "Debe pagar",
+      "paid": "Pago",
+      "delay_days": "Dias de retraso",
+      "pieces": "Piezas/productos",
+      "purchase_total": "Total de compra",
+      "category_total": "Total",
+      "period_text": "Las tandas visualizadas son del periodo del {{start}} al {{end}}",
+      "purchase_pagination": {
+        "range": "{{start}} - {{end}} de {{total}}",
+        "previous": "Compras anteriores",
+        "next": "Compras siguientes"
+      }
+    },
+    "payment_groups": {
+      "tanda_1": "Tanda 1",
+      "tanda_2": "Tanda 2",
+      "tanda_3": "Tanda 3",
+      "purchase_1": "Compra 1",
+      "purchase_2": "Compra 2"
+    },
+    "payments": {
+      "payment_1": "Pago 1",
+      "payment_2": "Pago 2",
+      "payment_3": "Pago 3",
+      "payment_4": "Pago 4",
+      "payment_5": "Pago 5",
+      "payment_6": "Pago 6"
+    },
+    "purchases": {
+      "purchase_1": "Compra 1",
+      "purchase_2": "Compra 2",
+      "purchase_3": "Compra 3",
+      "purchase_4": "Compra 4",
+      "purchase_5": "Compra 5",
+      "purchase_6": "Compra 6",
+      "purchase_7": "Compra 7",
+      "purchase_8": "Compra 8",
+      "purchase_9": "Compra 9",
+      "purchase_10": "Compra 10",
+      "purchase_11": "Compra 11",
+      "purchase_12": "Compra 12",
+      "purchase_13": "Compra 13",
+      "purchase_14": "Compra 14",
+      "purchase_15": "Compra 15",
+      "purchase_16": "Compra 16",
+      "purchase_17": "Compra 17",
+      "purchase_18": "Compra 18",
+      "purchase_19": "Compra 19",
+      "purchase_20": "Compra 20"
+    },
+    "categories": {
+      "electronics": "Electronica",
+      "home": "Hogar",
+      "fashion": "Moda",
+      "beauty": "Belleza",
+      "sports": "Deportes"
+    }
+  },
+  "tanda_view": {
+    "title": "Crea tu nueva tanda",
+    "description": "Completa cada paso para registrar una nueva tanda",
+    "completed": "Paso completado",
+    "steps": {
+      "client": "Seleccionar cliente",
+      "product": "Ingresar producto",
+      "payment_count": "Seleccionar cantidad de tandas",
+      "payment_frequency": "Seleccionar frecuencia de pago",
+      "first_payment_date": "Seleccionar primera fecha de pago",
+      "summary": "Resumen de la tanda"
+    },
+    "client": {
+      "search_placeholder": "Buscar cliente por nombre",
+      "selected_label": "Cliente seleccionado",
+      "edit_label": "Editar cliente seleccionado"
+    },
+    "product": {
+      "input_placeholder": "Ingresa el ID del producto",
+      "add": "Añadir",
+      "save": "Guardar",
+      "columns": {
+        "id": "ID",
+        "name": "Nombre",
+        "price": "Precio",
+        "actions": "Acciones"
+      },
+      "edit_price": "Editar precio",
+      "delete": "Eliminar producto",
+      "price_placeholder": "Precio"
+    },
+    "payment_count": {
+      "question": "¿En cuántas tandas quiere diferir el pago total?",
+      "placeholder": "Ingrese valor"
+    },
+    "payment_frequency": {
+      "question": "¿Cada cuánto tiempo va a pagar el cliente?",
+      "placeholder": "Selecciona frecuencia",
+      "seven_days": "7 días",
+      "fifteen_days": "15 días",
+      "thirty_days": "30 días"
+    },
+    "first_payment_date": {
+      "question": "¿Qué día será la primera fecha de pago?",
+      "placeholder": "Selecciona una fecha",
+      "save": "Guardar"
+    },
+    "summary": {
+      "client_title": "Cliente",
+      "client_label": "Cliente",
+      "products_title": "Productos",
+      "conditions_title": "Resumen de condiciones",
+      "conditions_text": "El cliente decidió pagar en {{count}} tandas cada {{days}} y su primer día de pago será el día {{date}}.",
+      "pending": "Pendiente por completar",
+      "confirm": "Confirmar tanda",
+      "cancel": "Cancelar"
+    }
+  },
+  "inventory": {
+    "title": "Inventario de productos",
+    "description": "Administra grupos, categorias y productos desde un solo lugar.",
+    "groups": {
+      "title": "Grupos",
+      "add": "Añadir",
+      "columns": {
+        "id": "ID",
+        "name": "Nombre"
+      }
+    },
+    "categories": {
+      "title": "Categorias",
+      "add": "Añadir",
+      "columns": {
+        "id": "ID",
+        "name": "Name",
+        "id_group": "ID_grupo"
+      }
+    },
+    "products": {
+      "title": "Productos",
+      "add": "Añadir",
+      "showing": "Mostrando 1 a 5 de 28 productos",
+      "columns": {
+        "id": "ID",
+        "name": "Name",
+        "id_category": "ID_categoria",
+        "price": "Price"
+      },
+      "pagination": {
+        "previous": "Pagina anterior",
+        "next": "Pagina siguiente"
+      }
+    },
+    "actions": {
+      "edit": "Editar",
+      "delete": "Eliminar"
+    },
+    "pagination": {
+      "range": "{{start}} - {{end}} de {{total}}",
+      "previous": "Pagina anterior",
+      "next": "Pagina siguiente"
+    }
+  }
+}

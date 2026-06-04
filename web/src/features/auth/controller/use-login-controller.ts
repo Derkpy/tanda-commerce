@@ -2,6 +2,7 @@ import { isAxiosError } from "axios";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useLocation, useNavigate } from "react-router-dom";
+import { t } from "@/shared/lib/i18n";
 import { createZodResolver } from "@/shared/lib/zod-form-resolver";
 import { authApi } from "../api/auth.api";
 import { loginSchema, type LoginValues } from "../model/auth.schema";
@@ -26,15 +27,15 @@ function getRedirectPath(state: unknown) {
 function getLoginErrorMessage(error: unknown) {
   if (isAxiosError(error)) {
     if (error.response?.status === 401 || error.response?.status === 403) {
-      return "No se pudo iniciar sesion con esas credenciales.";
+      return t("auth.login.errors.invalid_credentials");
     }
 
     if (error.response?.status === 429) {
-      return "Demasiados intentos. Intenta de nuevo mas tarde.";
+      return t("auth.login.errors.too_many_attempts");
     }
   }
 
-  return "No se pudo iniciar sesion. Intenta de nuevo.";
+  return t("auth.login.errors.generic");
 }
 
 export function useLoginController() {

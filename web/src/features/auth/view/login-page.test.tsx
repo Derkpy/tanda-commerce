@@ -2,6 +2,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { t } from "@/shared/lib/i18n";
 import { authApi } from "../api/auth.api";
 import { useAuthStore } from "../model/auth.store";
 import { LoginPage } from "./login-page";
@@ -37,12 +38,12 @@ describe("LoginPage", () => {
     const user = userEvent.setup();
     renderLogin();
 
-    await user.click(screen.getByRole("button", { name: "Entrar" }));
+    await user.click(screen.getByRole("button", { name: t("auth.login.submit") }));
 
     expect(
-      await screen.findByText("Ingresa tu correo o usuario."),
+      await screen.findByText(t("auth.login.validation.identifier_required")),
     ).toBeInTheDocument();
-    expect(screen.getByText("Ingresa tu contrasena.")).toBeInTheDocument();
+    expect(screen.getByText(t("auth.login.validation.password_required"))).toBeInTheDocument();
     expect(mockedAuthApi.login).not.toHaveBeenCalled();
   });
 
@@ -60,9 +61,9 @@ describe("LoginPage", () => {
 
     renderLogin();
 
-    await user.type(screen.getByLabelText("Correo o usuario"), "derek");
-    await user.type(screen.getByLabelText("Contrasena"), "password123");
-    await user.click(screen.getByRole("button", { name: "Entrar" }));
+    await user.type(screen.getByLabelText(t("auth.login.identifier_label")), "derek");
+    await user.type(screen.getByLabelText(t("auth.login.password_label")), "password123");
+    await user.click(screen.getByRole("button", { name: t("auth.login.submit") }));
 
     await waitFor(() => {
       expect(mockedAuthApi.login).toHaveBeenCalledWith({
@@ -84,12 +85,12 @@ describe("LoginPage", () => {
 
     renderLogin();
 
-    await user.type(screen.getByLabelText("Correo o usuario"), "derek");
-    await user.type(screen.getByLabelText("Contrasena"), "password123");
-    await user.click(screen.getByRole("button", { name: "Entrar" }));
+    await user.type(screen.getByLabelText(t("auth.login.identifier_label")), "derek");
+    await user.type(screen.getByLabelText(t("auth.login.password_label")), "password123");
+    await user.click(screen.getByRole("button", { name: t("auth.login.submit") }));
 
     expect(
-      await screen.findByText("No se pudo iniciar sesion con esas credenciales."),
+      await screen.findByText(t("auth.login.errors.invalid_credentials")),
     ).toBeInTheDocument();
     expect(screen.queryByText("Panel autenticado")).not.toBeInTheDocument();
   });
@@ -103,12 +104,12 @@ describe("LoginPage", () => {
 
     renderLogin();
 
-    await user.type(screen.getByLabelText("Correo o usuario"), "derek");
-    await user.type(screen.getByLabelText("Contrasena"), "password123");
-    await user.click(screen.getByRole("button", { name: "Entrar" }));
+    await user.type(screen.getByLabelText(t("auth.login.identifier_label")), "derek");
+    await user.type(screen.getByLabelText(t("auth.login.password_label")), "password123");
+    await user.click(screen.getByRole("button", { name: t("auth.login.submit") }));
 
     expect(
-      await screen.findByText("No se pudo iniciar sesion con esas credenciales."),
+      await screen.findByText(t("auth.login.errors.invalid_credentials")),
     ).toBeInTheDocument();
   });
 });
