@@ -6,6 +6,12 @@ on:
       - main
   pull_request:
 
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
 jobs:
   test-build:
     runs-on: ubuntu-latest
@@ -54,16 +60,16 @@ jobs:
       REDIS_INTEGRATION: "true"
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
         with:
           run_install: false
           version: 11.1.2
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           cache: pnpm
           node-version: 22
@@ -96,7 +102,7 @@ jobs:
         run: pnpm --filter system-tandas-web build
 
       - name: Setup Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       - name: Docker build backend
         run: docker build -f backend/Dockerfile -t system-tandas-backend:ci .
