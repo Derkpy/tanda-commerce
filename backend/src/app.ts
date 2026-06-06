@@ -8,7 +8,7 @@ import { pinoHttp } from "pino-http";
 import { env } from "./config/env.js";
 import { logger } from "./config/logger.js";
 import { errorHandler, notFoundHandler } from "./middleware/error-handler.js";
-import { apiRouter } from "./routes/index.js";
+import { createApiRouter } from "./routes/index.js";
 
 const allowedOrigins = new Set([
   env.FRONTEND_URL,
@@ -30,16 +30,15 @@ const corsOptions: CorsOptions = {
   optionsSuccessStatus: 204,
 };
 
-const apiRateLimiter = rateLimit({
-  windowMs: env.RATE_LIMIT_WINDOW_MS,
-  limit: env.RATE_LIMIT_MAX,
-  standardHeaders: "draft-8",
-  legacyHeaders: false,
-  message: { error: "Too many requests" },
-});
-
 export const createApp = () => {
   const app = express();
+  const apiRateLimiter = rateLimit({
+    windowMs: env.RATE_LIMIT_WINDOW_MS,
+    limit: env.RATE_LIMIT_MAX,
+    standardHeaders: "draft-8",
+    legacyHeaders: false,
+    message: { error: "Too many requests" },
+  });
 
   app.disable("x-powered-by");
   app.set("trust proxy", env.NODE_ENV === "production" ? 1 : false);
@@ -56,7 +55,7 @@ export const createApp = () => {
     res.json({ status: "ok" });
   });
 
-  app.use("/api", apiRouter);
+  app.use("/api", createApiRouter());
   app.use(notFoundHandler);
   app.use(errorHandler);
 

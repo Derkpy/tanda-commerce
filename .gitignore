@@ -7,3 +7,4 @@ build/
 backend/generated/
 *.log
 .codex-remote-attachments/
+.tools/

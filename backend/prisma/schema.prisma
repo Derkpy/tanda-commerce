@@ -123,7 +123,7 @@ model Category {
   categoryName String @map("category_name") @db.VarChar(80)
   code         String @unique @db.VarChar(45)
 
-  group    ProductGroup @relation(fields: [idGroup], references: [idGroup], onDelete: Restrict, onUpdate: Cascade)
+  group    ProductGroup @relation(fields: [idGroup], references: [idGroup], onDelete: Cascade, onUpdate: Cascade)
   products Product[]
 
   @@index([idGroup])
@@ -137,7 +137,7 @@ model Product {
   code         String   @unique @db.VarChar(45)
   priceProduct Decimal? @map("price_product") @db.Decimal(12, 2)
 
-  category    Category     @relation(fields: [idCategory], references: [idCategory], onDelete: Restrict, onUpdate: Cascade)
+  category    Category     @relation(fields: [idCategory], references: [idCategory], onDelete: Cascade, onUpdate: Cascade)
   saleDetails SaleDetail[]
 
   @@index([idCategory])

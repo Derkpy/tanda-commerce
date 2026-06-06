@@ -3,6 +3,14 @@
   "version": "0.0.0",
   "private": true,
   "packageManager": "pnpm@11.1.2",
+  "scripts": {
+    "dev:redis": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/start-redis.ps1",
+    "dev:redis:stop": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/stop-redis.ps1",
+    "dev:backend": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/start-backend.ps1",
+    "dev:worker:tanda": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/start-tanda-worker.ps1",
+    "dev:web": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/start-web.ps1",
+    "dev:local": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/start-dev.ps1"
+  },
   "devEngines": {
     "packageManager": {
       "name": "pnpm",

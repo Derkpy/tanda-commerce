@@ -3,6 +3,7 @@ import request from "supertest";
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import { createApp } from "../app.js";
 import { prisma } from "../config/prisma.js";
+import { closeTandaBuildQueue } from "../queues/tanda-build.queue.js";
 import { disconnectDatabase, resetDatabase } from "./test-db.js";
 
 const firstPaymentDate = "2099-07-02";
@@ -127,10 +128,11 @@ describeIntegration("sales builder integration", () => {
   });
 
   afterAll(async () => {
+    await closeTandaBuildQueue();
     await disconnectDatabase();
   });
 
-  it("previsualiza una venta usando precio fijo y manual", async () => {
+  it("usa el precio enviado por la tabla del paso dos aunque exista precio fijo", async () => {
     const { agent, client } = await loginAsBranchUser();
 
     const response = await agent.post("/api/sales/build/preview").send({
@@ -145,16 +147,29 @@ describeIntegration("sales builder integration", () => {
     });
 
     expect(response.status).toBe(200);
-    expect(response.body.total).toBe("100.01");
+    expect(response.body.total).toBe("1050.00");
     expect(response.body.payments.map((payment: { paymentTotal: string }) => payment.paymentTotal)).toEqual([
-      "33.33",
-      "33.33",
-      "33.35",
+      "350.00",
+      "350.00",
+      "350.00",
     ]);
     expect(await prisma.sale.count()).toBe(0);
   });
 
-  it("requiere precio manual cuando el producto no tiene precio fijo", async () => {
+  it("busca producto por codigo para el paso de captura de productos", async () => {
+    const { agent } = await loginAsBranchUser();
+
+    const response = await agent.get("/api/products/code/BLU-1");
+
+    expect(response.status).toBe(200);
+    expect(response.body).toMatchObject({
+      code: "BLU-1",
+      nameProducts: "Blusa Lisa",
+      priceProduct: "50",
+    });
+  });
+
+  it("requiere el precio de la tabla del paso dos aunque el producto tenga precio fijo", async () => {
     const { agent, client } = await loginAsBranchUser();
 
     const response = await agent.post("/api/sales/build/preview").send({
@@ -162,11 +177,11 @@ describeIntegration("sales builder integration", () => {
       firstPaymentDate,
       paymentCount: 2,
       paymentIntervalDays: 7,
-      products: [{ code: "BLU-2", quantity: 1 }],
+      products: [{ code: "BLU-1", quantity: 1 }],
     });
 
     expect(response.status).toBe(400);
-    expect(response.body.error).toBe("Product requires a manual price: BLU-2");
+    expect(response.body.error).toBe("Validation error");
   });
 
   it("rechaza productos de otra sucursal", async () => {
@@ -177,7 +192,7 @@ describeIntegration("sales builder integration", () => {
       firstPaymentDate,
       paymentCount: 2,
       paymentIntervalDays: 7,
-      products: [{ code: otherBranchProduct.code, quantity: 1 }],
+      products: [{ code: otherBranchProduct.code, price: 99, quantity: 1 }],
     });
 
     expect(response.status).toBe(404);
@@ -193,7 +208,7 @@ describeIntegration("sales builder integration", () => {
       paymentCount: 3,
       paymentIntervalDays: 5,
       products: [
-        { code: "BLU-1", quantity: 2 },
+        { code: "BLU-1", price: 30.00, quantity: 2 },
         { code: "BLU-2", price: 20.00, quantity: 1 },
       ],
     });
@@ -211,10 +226,10 @@ describeIntegration("sales builder integration", () => {
       },
     });
 
-    expect(sale.total.toString()).toBe("120");
+    expect(sale.total.toString()).toBe("80");
     expect(sale.details).toHaveLength(2);
     expect(sale.details.map((detail) => detail.price.toString())).toEqual([
-      "50",
+      "30",
       "20",
     ]);
     expect(sale.tanda?.dateStart.toISOString().slice(0, 10)).toBe(firstPaymentDate);
@@ -227,6 +242,24 @@ describeIntegration("sales builder integration", () => {
     ).toEqual(["2099-07-02", "2099-07-07", "2099-07-12"]);
     expect(
       sale.tanda?.payments.map((payment) => payment.paymentTotal.toString()),
-    ).toEqual(["40", "40", "40"]);
+    ).toEqual(["26.66", "26.66", "26.68"]);
+  });
+
+  it("encola la creacion de venta y tanda desde el modulo tandas", async () => {
+    const { agent, client } = await loginAsBranchUser();
+
+    const response = await agent.post("/api/tandas/build").send({
+      clientId: client.idClient,
+      firstPaymentDate,
+      paymentCount: 2,
+      paymentIntervalDays: 7,
+      products: [{ code: "BLU-1", price: 50, quantity: 1 }],
+    });
+
+    expect(response.status).toBe(202);
+    expect(response.body).toMatchObject({
+      status: "queued",
+    });
+    expect(response.body.jobId).toEqual(expect.any(String));
   });
 });

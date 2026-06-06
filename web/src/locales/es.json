@@ -192,15 +192,29 @@
     "client": {
       "search_placeholder": "Buscar cliente por nombre",
       "selected_label": "Cliente seleccionado",
-      "edit_label": "Editar cliente seleccionado"
+      "edit_label": "Editar cliente seleccionado",
+      "loading": "Cargando clientes",
+      "no_results": "No hay clientes con ese nombre.",
+      "create_new": "Crear cliente {{name}}",
+      "add_new": "Añadir cliente nuevo"
+    },
+    "client_dialog": {
+      "title": "Añadir cliente",
+      "name_label": "Nombre del cliente",
+      "name_placeholder": "Ingresa el nombre del cliente",
+      "confirm": "Añadir cliente",
+      "submitting": "Añadiendo",
+      "cancel": "Cancelar"
     },
     "product": {
       "input_placeholder": "Ingresa el ID del producto",
       "add": "Añadir",
       "save": "Guardar",
+      "empty": "Sin productos agregados.",
       "columns": {
         "id": "ID",
         "name": "Nombre",
+        "quantity": "Cantidad",
         "price": "Precio",
         "actions": "Acciones"
       },
@@ -215,6 +229,7 @@
     "payment_frequency": {
       "question": "¿Cada cuánto tiempo va a pagar el cliente?",
       "placeholder": "Selecciona frecuencia",
+      "help": "El intervalo permitido es de 3 a 15 días.",
       "seven_days": "7 días",
       "fifteen_days": "15 días",
       "thirty_days": "30 días"
@@ -231,8 +246,37 @@
       "conditions_title": "Resumen de condiciones",
       "conditions_text": "El cliente decidió pagar en {{count}} tandas cada {{days}} y su primer día de pago será el día {{date}}.",
       "pending": "Pendiente por completar",
+      "days_suffix": "{{days}} días",
+      "total": "Total",
+      "payments_title": "Calendario de pagos",
+      "backend_pending": "El calendario y los pagos finales se generaran en backend al confirmar la tanda.",
+      "payment_number": "Pago",
+      "payment_date": "Fecha",
+      "payment_total": "Cantidad",
+      "loading_preview": "Calculando resumen",
       "confirm": "Confirmar tanda",
+      "cancel": "Cancelar",
+      "submitting": "Guardando"
+    },
+    "confirm": {
+      "title": "Crear tanda",
+      "text": "¿Desea crear la tanda para {{client}}?",
+      "accept": "Crear tanda",
       "cancel": "Cancelar"
+    },
+    "messages": {
+      "load_error": "No se pudo cargar la información para crear la tanda.",
+      "preview_error": "No se pudo calcular el resumen de la tanda.",
+      "create_error": "No se pudo crear la tanda.",
+      "create_success": "La tanda se envio a procesamiento.",
+      "client_create_error": "No se pudo crear el cliente.",
+      "client_create_success": "El cliente se añadió correctamente.",
+      "client_name_required": "Ingresa el nombre del cliente.",
+      "step_locked": "Completa el paso anterior antes de continuar.",
+      "product_not_found": "No se encontró el producto con código {{code}}.",
+      "products_incomplete": "Agrega productos y completa sus precios antes de continuar.",
+      "invalid_price": "Ingresa un precio válido.",
+      "invalid_first_payment_date": "Selecciona una fecha desde hoy en adelante."
     }
   },
   "inventory": {
@@ -259,6 +303,7 @@
       "title": "Productos",
       "add": "Añadir",
       "showing": "Mostrando 1 a 5 de 28 productos",
+      "no_price": "Sin precio",
       "columns": {
         "id": "ID",
         "name": "Name",
@@ -273,6 +318,53 @@
     "actions": {
       "edit": "Editar",
       "delete": "Eliminar"
+    },
+    "dialog": {
+      "group": {
+        "create_title": "Añadir grupo",
+        "edit_title": "Editar grupo"
+      },
+      "category": {
+        "create_title": "Añadir categoria",
+        "edit_title": "Editar categoria"
+      },
+      "product": {
+        "create_title": "Añadir producto",
+        "edit_title": "Editar producto"
+      },
+      "group_label": "Grupo",
+      "category_label": "Categoria",
+      "name_label": "Nombre",
+      "price_label": "Precio",
+      "price_placeholder": "Precio opcional",
+      "cancel": "Cancelar",
+      "save": "Guardar",
+      "saving": "Guardando"
+    },
+    "delete": {
+      "warning_title": "Advertencia de eliminacion",
+      "confirm_title": "Confirmar eliminacion",
+      "warning_text": "Eliminar el/la {{tableName}} hara que se elimine lo relacionado a {{rowName}}, considere esto antes de confirmar su eliminacion permanente del registro de inventario. Si desea proceder de click a continuar, por el contrario de cancelar.",
+      "group_confirm_text": "Para eliminar {{rowName}}, escribe el nombre del grupo.",
+      "group_confirm_label": "Nombre del grupo",
+      "category_confirm_prefix": "¿Desea eliminar",
+      "category_confirm_suffix": "y sus productos relacionados?",
+      "product_confirm_text": "¿Desea eliminar {{rowName}} del inventario?",
+      "cancel": "Cancelar",
+      "continue": "Continuar",
+      "delete": "Eliminar",
+      "deleting": "Eliminando"
+    },
+    "messages": {
+      "loading": "Cargando inventario",
+      "empty": "Sin registros",
+      "name_required": "Ingresa un nombre.",
+      "group_required": "Selecciona un grupo.",
+      "category_required": "Selecciona una categoria.",
+      "invalid_price": "El precio debe usar hasta dos decimales.",
+      "delete_confirm": "¿Eliminar este registro?",
+      "delete_name_mismatch": "El nombre escrito no coincide.",
+      "generic_error": "No se pudo completar la operacion."
     },
     "pagination": {
       "range": "{{start}} - {{end}} de {{total}}",

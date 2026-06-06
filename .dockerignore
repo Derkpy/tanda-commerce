@@ -1,5 +1,7 @@
 .git
 .github
+.codex-remote-attachments
+.tools
 node_modules
 backend/node_modules
 backend/dist

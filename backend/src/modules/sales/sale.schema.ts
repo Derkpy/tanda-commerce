@@ -9,7 +9,7 @@ export const buildSaleSchema = z
           .object({
             code: z.string().trim().min(1).max(45),
             quantity: z.coerce.number().int().positive(),
-            price: z.coerce.number().positive().optional(),
+            price: z.coerce.number().positive(),
           })
           .strict(),
       )

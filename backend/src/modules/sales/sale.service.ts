@@ -161,7 +161,6 @@ const resolveBuilderInput = async (
     select: {
       idProduct: true,
       code: true,
-      priceProduct: true,
     },
   });
   const productsByCode = new Map(
@@ -181,23 +180,11 @@ const resolveBuilderInput = async (
         throw new ApiError(404, `Product not found: ${requestedProduct.code}`);
       }
 
-      const price =
-        product.priceProduct !== null
-          ? product.priceProduct.toString()
-          : requestedProduct.price;
-
-      if (price === undefined) {
-        throw new ApiError(
-          400,
-          `Product requires a manual price: ${requestedProduct.code}`,
-        );
-      }
-
       return {
         idProduct: product.idProduct,
         code: product.code,
         quantity: requestedProduct.quantity,
-        unitPriceCents: parseMoneyToCents(price),
+        unitPriceCents: parseMoneyToCents(requestedProduct.price),
       };
     }),
   };

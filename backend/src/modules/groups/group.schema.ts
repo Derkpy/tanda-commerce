@@ -6,4 +6,7 @@ export const createGroupSchema = z
   })
   .strict();
 
+export const updateGroupSchema = createGroupSchema;
+
 export type CreateGroupInput = z.infer<typeof createGroupSchema>;
+export type UpdateGroupInput = z.infer<typeof updateGroupSchema>;

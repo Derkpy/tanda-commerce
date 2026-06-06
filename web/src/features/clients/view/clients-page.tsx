@@ -210,7 +210,7 @@ export function ClientsPage() {
       </section>
 
       <section className="grid gap-5 xl:grid-cols-[17rem_minmax(0,1fr)]">
-        <article className="rounded-3xl border border-white/10 bg-white/[0.045] p-4 shadow-2xl shadow-black/20 backdrop-blur-md sm:p-5">
+        <article className="rounded-3xl border border-white/10 bg-white/4.5 p-4 shadow-2xl shadow-black/20 backdrop-blur-md sm:p-5">
           <div className="mb-5 flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <div className="grid size-11 place-items-center rounded-2xl bg-violet-500/15 text-violet-200">
@@ -218,10 +218,10 @@ export function ClientsPage() {
               </div>
               <h2 className="text-xl font-semibold">{t("clients_view.clients_table.title")}</h2>
             </div>
-            <div className="flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.04] p-1">
+            <div className="flex items-center gap-1 rounded-full border border-white/10 bg-white/4.5 p-1">
               <button
                 aria-label={t("clients_view.clients_table.pagination.previous")}
-                className="grid size-8 place-items-center rounded-full text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
+                className="grid size-5 place-items-center rounded-full text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
                 disabled={clientPage === 1}
                 onClick={() => setClientPage((current) => Math.max(1, current - 1))}
                 type="button"
@@ -233,7 +233,7 @@ export function ClientsPage() {
               </span>
               <button
                 aria-label={t("clients_view.clients_table.pagination.next")}
-                className="grid size-8 place-items-center rounded-full text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
+                className="grid size-5 place-items-center rounded-full text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
                 disabled={clientPage === clientPageCount}
                 onClick={() => setClientPage((current) => Math.min(clientPageCount, current + 1))}
                 type="button"

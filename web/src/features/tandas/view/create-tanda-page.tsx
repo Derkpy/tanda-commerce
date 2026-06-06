@@ -1,4 +1,3 @@
-import { useMemo, useState } from "react";
 import {
   CalendarDays,
   Check,
@@ -10,37 +9,15 @@ import {
   UserRound,
   X,
 } from "lucide-react";
+import type { ReactNode } from "react";
+import type { ClientDto } from "../data/create-tanda.gateway";
+import {
+  type StepId,
+  type TandaProductRow,
+  useCreateTandaController,
+} from "../controller/use-create-tanda-controller";
 import { cn } from "@/shared/lib/cn";
 import { t } from "@/shared/lib/i18n";
-
-type StepId = 1 | 2 | 3 | 4 | 5 | 6;
-
-type ProductRow = {
-  id: string;
-  name: string;
-  price: string;
-};
-
-const clients = ["María González", "Mariana López", "Marco Pérez"];
-
-const initialProducts: ProductRow[] = [
-  { id: "192012", name: "Pantalón", price: "$120" },
-  { id: "089102", name: "Falda", price: "$60" },
-  { id: "891289", name: "Blusa", price: "$0" },
-];
-
-const productCatalog: Record<string, ProductRow> = {
-  "089102": { id: "089102", name: "Falda", price: "$60" },
-  "192012": { id: "192012", name: "Pantalón", price: "$120" },
-  "334421": { id: "334421", name: "Bolso", price: "$240" },
-  "891289": { id: "891289", name: "Blusa", price: "$0" },
-};
-
-const frequencyOptions = [
-  t("tanda_view.payment_frequency.seven_days"),
-  t("tanda_view.payment_frequency.fifteen_days"),
-  t("tanda_view.payment_frequency.thirty_days"),
-];
 
 const stepTitles: Record<StepId, string> = {
   1: t("tanda_view.steps.client"),
@@ -52,122 +29,7 @@ const stepTitles: Record<StepId, string> = {
 };
 
 export function CreateTandaPage() {
-  const [activeStep, setActiveStep] = useState<StepId | null>(null);
-  const [completedSteps, setCompletedSteps] = useState<Set<StepId>>(new Set());
-  const [clientSearch, setClientSearch] = useState("mar");
-  const [selectedClient, setSelectedClient] = useState<string | null>(null);
-  const [isClientEditing, setIsClientEditing] = useState(true);
-  const [productInput, setProductInput] = useState("");
-  const [products, setProducts] = useState<ProductRow[]>(initialProducts);
-  const [editingProductId, setEditingProductId] = useState<string | null>(null);
-  const [editingPrice, setEditingPrice] = useState("");
-  const [paymentCount, setPaymentCount] = useState("");
-  const [paymentFrequency, setPaymentFrequency] = useState("");
-  const [firstPaymentDate, setFirstPaymentDate] = useState("");
-
-  const filteredClients = useMemo(() => {
-    const query = clientSearch.trim().toLowerCase();
-
-    if (!query) {
-      return clients;
-    }
-
-    return clients.filter((client) => client.toLowerCase().includes(query));
-  }, [clientSearch]);
-
-  const completeStep = (step: StepId) => {
-    setCompletedSteps((current) => {
-      const next = new Set(current);
-      next.add(step);
-      return next;
-    });
-  };
-
-  const handleStepClick = (step: StepId) => {
-    setActiveStep((current) => (current === step ? null : step));
-  };
-
-  const handleClientSelect = (client: string) => {
-    setSelectedClient(client);
-    setClientSearch(client);
-    setIsClientEditing(false);
-    completeStep(1);
-    setActiveStep(null);
-  };
-
-  const handleProductAdd = () => {
-    const productId = productInput.trim();
-
-    if (!productId) {
-      return;
-    }
-
-    const product = productCatalog[productId] ?? {
-      id: productId,
-      name: "Producto temporal",
-      price: "$0",
-    };
-
-    setProducts((current) => {
-      if (current.some((item) => item.id === product.id)) {
-        return current;
-      }
-
-      return [...current, product];
-    });
-    setProductInput("");
-  };
-
-  const handleProductSave = () => {
-    completeStep(2);
-    setActiveStep(null);
-  };
-
-  const handlePriceSave = (id: string) => {
-    setProducts((current) =>
-      current.map((product) =>
-        product.id === id
-          ? {
-              ...product,
-              price: editingPrice || product.price,
-            }
-          : product,
-      ),
-    );
-    setEditingProductId(null);
-    setEditingPrice("");
-  };
-
-  const handleProductDelete = (id: string) => {
-    setProducts((current) => current.filter((product) => product.id !== id));
-  };
-
-  const handlePaymentCountChange = (value: string) => {
-    setPaymentCount(value);
-
-    if (value) {
-      completeStep(3);
-      setActiveStep(4);
-    }
-  };
-
-  const handlePaymentFrequencyChange = (value: string) => {
-    setPaymentFrequency(value);
-
-    if (value) {
-      completeStep(4);
-      setActiveStep(5);
-    }
-  };
-
-  const handleDateSave = () => {
-    if (!firstPaymentDate) {
-      return;
-    }
-
-    completeStep(5);
-    setActiveStep(null);
-  };
+  const controller = useCreateTandaController();
 
   return (
     <>
@@ -180,78 +42,119 @@ export function CreateTandaPage() {
         </p>
       </section>
 
+      {controller.error ? (
+        <div className="mb-5 rounded-2xl border border-rose-400/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
+          {controller.error}
+        </div>
+      ) : null}
+
+      {controller.notice ? (
+        <div className="mb-5 rounded-2xl border border-emerald-400/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-100">
+          {controller.notice}
+        </div>
+      ) : null}
+
       <section className="max-w-5xl">
         <div className="space-y-4">
           {([1, 2, 3, 4, 5, 6] as StepId[]).map((step) => (
             <StepperItem
-              isCompleted={completedSteps.has(step)}
-              isExpanded={activeStep === step}
+              isCompleted={controller.completedSteps.has(step)}
+              isExpanded={controller.activeStep === step}
+              isLocked={!canOpenStep(step, controller.completedSteps)}
               key={step}
               number={step}
-              onClick={() => handleStepClick(step)}
+              onClick={() => controller.handleStepClick(step)}
               title={stepTitles[step]}
             >
               {step === 1 ? (
                 <ClientStep
-                  clientSearch={clientSearch}
-                  filteredClients={filteredClients}
-                  isClientEditing={isClientEditing}
-                  onClientEdit={() => setIsClientEditing(true)}
-                  onClientSearchChange={setClientSearch}
-                  onClientSelect={handleClientSelect}
-                  selectedClient={selectedClient}
+                  clientSearch={controller.clientSearch}
+                  filteredClients={controller.filteredClients}
+                  isClientEditing={controller.isClientEditing}
+                  isLoading={controller.isLoading}
+                  onClientCreate={controller.openClientCreate}
+                  onClientEdit={() => controller.setIsClientEditing(true)}
+                  onClientSearchChange={controller.setClientSearch}
+                  onClientSelect={controller.handleClientSelect}
+                  selectedClient={controller.selectedClient}
                 />
               ) : null}
               {step === 2 ? (
                 <ProductStep
-                  editingPrice={editingPrice}
-                  editingProductId={editingProductId}
-                  onAdd={handleProductAdd}
-                  onDelete={handleProductDelete}
+                  editingPrice={controller.editingPrice}
+                  editingProductCode={controller.editingProductCode}
+                  isLookupLoading={controller.isProductLookupLoading}
+                  onAdd={controller.handleProductAdd}
+                  onDelete={controller.handleProductDelete}
                   onEdit={(product) => {
-                    setEditingProductId(product.id);
-                    setEditingPrice(product.price);
+                    controller.setEditingProductCode(product.code);
+                    controller.setEditingPrice(product.price);
                   }}
-                  onInputChange={setProductInput}
-                  onPriceChange={setEditingPrice}
-                  onPriceSave={handlePriceSave}
-                  onSave={handleProductSave}
-                  productInput={productInput}
-                  products={products}
+                  onInputChange={controller.setProductInput}
+                  onPriceChange={controller.setEditingPrice}
+                  onPriceSave={controller.handlePriceSave}
+                  onQuantityChange={controller.handleQuantityChange}
+                  onSave={controller.handleProductSave}
+                  productInput={controller.productInput}
+                  products={controller.products}
                 />
               ) : null}
               {step === 3 ? (
                 <PaymentCountStep
-                  onChange={handlePaymentCountChange}
-                  paymentCount={paymentCount}
+                  onChange={controller.handlePaymentCountChange}
+                  paymentCount={controller.paymentCount}
                 />
               ) : null}
               {step === 4 ? (
                 <PaymentFrequencyStep
-                  onChange={handlePaymentFrequencyChange}
-                  paymentFrequency={paymentFrequency}
+                  onChange={controller.handlePaymentFrequencyChange}
+                  paymentFrequency={controller.paymentFrequency}
                 />
               ) : null}
               {step === 5 ? (
                 <FirstPaymentDateStep
-                  firstPaymentDate={firstPaymentDate}
-                  onChange={setFirstPaymentDate}
-                  onSave={handleDateSave}
+                  firstPaymentDate={controller.firstPaymentDate}
+                  minDate={controller.today}
+                  onChange={controller.setFirstPaymentDate}
+                  onSave={controller.handleDateSave}
                 />
               ) : null}
               {step === 6 ? (
                 <SummaryStep
-                  firstPaymentDate={firstPaymentDate}
-                  paymentCount={paymentCount}
-                  paymentFrequency={paymentFrequency}
-                  products={products}
-                  selectedClient={selectedClient}
+                  canSubmit={controller.canSubmit}
+                  firstPaymentDate={controller.firstPaymentDate}
+                  isSubmitting={controller.isSubmitting}
+                  onCancel={controller.resetWizard}
+                  onConfirm={controller.openConfirm}
+                  paymentCount={controller.paymentCount}
+                  paymentFrequency={controller.paymentFrequency}
+                  products={controller.products}
+                  selectedClient={controller.selectedClient}
                 />
               ) : null}
             </StepperItem>
           ))}
         </div>
       </section>
+
+      {controller.isConfirmOpen ? (
+        <ConfirmCreateTandaDialog
+          isSubmitting={controller.isSubmitting}
+          onCancel={controller.closeConfirm}
+          onConfirm={() => void controller.submitTanda()}
+          selectedClient={controller.selectedClient}
+        />
+      ) : null}
+
+      {controller.isClientCreateOpen ? (
+        <CreateClientDialog
+          isSubmitting={controller.isClientCreating}
+          name={controller.newClientName}
+          onCancel={controller.closeClientCreate}
+          onConfirm={() => void controller.handleClientCreate()}
+          onNameChange={controller.setNewClientName}
+        />
+      ) : null}
     </>
   );
 }
@@ -260,13 +163,15 @@ function StepperItem({
   children,
   isCompleted,
   isExpanded,
+  isLocked,
   number,
   onClick,
   title,
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
   isCompleted: boolean;
   isExpanded: boolean;
+  isLocked: boolean;
   number: StepId;
   onClick: () => void;
   title: string;
@@ -276,7 +181,12 @@ function StepperItem({
       {number < 6 ? (
         <div className="absolute bottom-[-1rem] left-[1.62rem] top-12 w-px bg-violet-400/30" />
       ) : null}
-      <div className="relative z-10 grid size-11 place-items-center rounded-full border border-violet-300/40 bg-violet-500/20 text-sm font-semibold text-white shadow-lg shadow-violet-500/30">
+      <div
+        className={cn(
+          "relative z-10 grid size-11 place-items-center rounded-full border border-violet-300/40 bg-violet-500/20 text-sm font-semibold text-white shadow-lg shadow-violet-500/30",
+          isLocked && "border-white/10 bg-white/[0.04] text-neutral-500 shadow-none",
+        )}
+      >
         {number}
       </div>
       <div className="min-w-0">
@@ -286,7 +196,9 @@ function StepperItem({
             className={cn(
               "min-w-0 max-w-[78%] shrink-0 rounded-2xl border border-white/10 bg-white/[0.055] px-4 py-3 text-center text-sm font-semibold text-white shadow-xl shadow-black/20 transition hover:border-violet-400/30 hover:bg-white/[0.075] sm:px-5",
               isExpanded && "border-violet-400/40 bg-violet-500/10",
+              isLocked && "cursor-not-allowed opacity-50 hover:border-white/10 hover:bg-white/[0.055]",
             )}
+            disabled={isLocked}
             onClick={onClick}
             type="button"
           >
@@ -317,18 +229,22 @@ function ClientStep({
   clientSearch,
   filteredClients,
   isClientEditing,
+  isLoading,
+  onClientCreate,
   onClientEdit,
   onClientSearchChange,
   onClientSelect,
   selectedClient,
 }: {
   clientSearch: string;
-  filteredClients: string[];
+  filteredClients: ClientDto[];
   isClientEditing: boolean;
+  isLoading: boolean;
+  onClientCreate: () => void;
   onClientEdit: () => void;
   onClientSearchChange: (value: string) => void;
-  onClientSelect: (client: string) => void;
-  selectedClient: string | null;
+  onClientSelect: (client: ClientDto) => void;
+  selectedClient: ClientDto | null;
 }) {
   return (
     <div className="max-w-xl">
@@ -339,7 +255,7 @@ function ClientStep({
           type="button"
         >
           <UserRound aria-hidden="true" className="size-4" />
-          {selectedClient}
+          {selectedClient.name}
         </button>
       ) : null}
 
@@ -358,17 +274,35 @@ function ClientStep({
             />
           </div>
           <div className="py-2">
+            {isLoading ? (
+              <p className="px-4 py-2 text-sm text-neutral-400">
+                {t("tanda_view.client.loading")}
+              </p>
+            ) : null}
+            {!isLoading && filteredClients.length === 0 ? (
+              <p className="px-4 py-2 text-sm text-neutral-400">
+                {t("tanda_view.client.no_results")}
+              </p>
+            ) : null}
             {filteredClients.map((client) => (
               <button
                 className="flex w-full items-center gap-3 px-4 py-2 text-left text-sm text-neutral-200 transition hover:bg-white/[0.045]"
-                key={client}
+                key={client.idClient}
                 onClick={() => onClientSelect(client)}
                 type="button"
               >
                 <UserRound aria-hidden="true" className="size-4 text-neutral-400" />
-                {client}
+                {client.name}
               </button>
             ))}
+            <button
+              className="flex w-full items-center gap-3 border-t border-white/10 px-4 py-3 text-left text-sm font-semibold text-violet-100 transition hover:bg-violet-500/10"
+              onClick={onClientCreate}
+              type="button"
+            >
+              <Plus aria-hidden="true" className="size-4" />
+              {t("tanda_view.client.add_new")}
+            </button>
           </div>
         </div>
       ) : null}
@@ -378,28 +312,32 @@ function ClientStep({
 
 function ProductStep({
   editingPrice,
-  editingProductId,
+  editingProductCode,
+  isLookupLoading,
   onAdd,
   onDelete,
   onEdit,
   onInputChange,
   onPriceChange,
   onPriceSave,
+  onQuantityChange,
   onSave,
   productInput,
   products,
 }: {
   editingPrice: string;
-  editingProductId: string | null;
+  editingProductCode: string | null;
+  isLookupLoading: boolean;
   onAdd: () => void;
-  onDelete: (id: string) => void;
-  onEdit: (product: ProductRow) => void;
+  onDelete: (code: string) => void;
+  onEdit: (product: TandaProductRow) => void;
   onInputChange: (value: string) => void;
   onPriceChange: (value: string) => void;
-  onPriceSave: (id: string) => void;
+  onPriceSave: (code: string, currentValue?: string) => void;
+  onQuantityChange: (code: string, quantity: string) => void;
   onSave: () => void;
   productInput: string;
-  products: ProductRow[];
+  products: TandaProductRow[];
 }) {
   return (
     <div>
@@ -412,6 +350,7 @@ function ProductStep({
         />
         <button
           className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-violet-400/20 bg-violet-500/15 px-5 text-sm font-semibold text-white shadow-lg shadow-violet-950/20 transition hover:bg-violet-500/20"
+          disabled={isLookupLoading}
           onClick={onAdd}
           type="button"
         >
@@ -430,11 +369,14 @@ function ProductStep({
 
       <div className="overflow-hidden rounded-2xl border border-white/10">
         <div className="overflow-x-auto">
-          <table className="min-w-[42rem] w-full border-collapse text-left text-sm">
+          <table className="min-w-[46rem] w-full border-collapse text-left text-sm">
             <thead className="bg-white/[0.04] text-xs uppercase tracking-wide text-neutral-500">
               <tr>
                 <th className="px-4 py-4 font-semibold">{t("tanda_view.product.columns.id")}</th>
                 <th className="px-4 py-4 font-semibold">{t("tanda_view.product.columns.name")}</th>
+                <th className="px-4 py-4 font-semibold">
+                  {t("tanda_view.product.columns.quantity")}
+                </th>
                 <th className="px-4 py-4 font-semibold">
                   {t("tanda_view.product.columns.price")}
                 </th>
@@ -444,45 +386,73 @@ function ProductStep({
               </tr>
             </thead>
             <tbody className="divide-y divide-white/10">
-              {products.map((product) => (
-                <tr className="transition hover:bg-white/[0.035]" key={product.id}>
-                  <td className="px-4 py-4 text-neutral-300">{product.id}</td>
-                  <td className="px-4 py-4 font-medium text-neutral-100">{product.name}</td>
-                  <td className="px-4 py-4 text-neutral-300">
-                    {editingProductId === product.id ? (
-                      <input
-                        className="h-9 w-28 rounded-xl border border-violet-400/40 bg-neutral-950/60 px-3 text-sm text-white outline-none"
-                        onBlur={() => onPriceSave(product.id)}
-                        onChange={(event) => onPriceChange(event.target.value)}
-                        placeholder={t("tanda_view.product.price_placeholder")}
-                        value={editingPrice}
-                      />
-                    ) : (
-                      product.price
-                    )}
-                  </td>
-                  <td className="px-4 py-4">
-                    <div className="flex items-center gap-3">
-                      <button
-                        aria-label={t("tanda_view.product.edit_price")}
-                        className="text-neutral-300 transition hover:text-violet-200"
-                        onClick={() => onEdit(product)}
-                        type="button"
-                      >
-                        <Pencil aria-hidden="true" className="size-4" />
-                      </button>
-                      <button
-                        aria-label={t("tanda_view.product.delete")}
-                        className="text-rose-400 transition hover:text-rose-200"
-                        onClick={() => onDelete(product.id)}
-                        type="button"
-                      >
-                        <Trash2 aria-hidden="true" className="size-4" />
-                      </button>
-                    </div>
+              {products.length === 0 ? (
+                <tr>
+                  <td className="px-4 py-5 text-neutral-400" colSpan={5}>
+                    {t("tanda_view.product.empty")}
                   </td>
                 </tr>
-              ))}
+              ) : null}
+              {products.map((product) => {
+                const isPriceEditing =
+                  editingProductCode === product.code ||
+                  (product.requiresManualPrice && !product.price);
+
+                return (
+                  <tr className="transition hover:bg-white/[0.035]" key={product.code}>
+                    <td className="px-4 py-4 text-neutral-300">{product.code}</td>
+                    <td className="px-4 py-4 font-medium text-neutral-100">{product.name}</td>
+                    <td className="px-4 py-4 text-neutral-300">
+                      <input
+                        className="h-9 w-20 rounded-xl border border-white/10 bg-neutral-950/60 px-3 text-sm text-white outline-none focus:border-violet-400/60"
+                        min={1}
+                        onChange={(event) => onQuantityChange(product.code, event.target.value)}
+                        type="number"
+                        value={product.quantity}
+                      />
+                    </td>
+                    <td className="px-4 py-4 text-neutral-300">
+                      {isPriceEditing ? (
+                        <input
+                          className="h-9 w-28 rounded-xl border border-violet-400/40 bg-neutral-950/60 px-3 text-sm text-white outline-none"
+                          onBlur={(event) => onPriceSave(product.code, event.currentTarget.value)}
+                          onChange={(event) => onPriceChange(event.target.value)}
+                          onKeyDown={(event) => {
+                            if (event.key === "Enter") {
+                              event.preventDefault();
+                              onPriceSave(product.code, event.currentTarget.value);
+                            }
+                          }}
+                          placeholder={t("tanda_view.product.price_placeholder")}
+                          value={editingPrice}
+                        />
+                      ) : (
+                        formatMoney(product.price)
+                      )}
+                    </td>
+                    <td className="px-4 py-4">
+                      <div className="flex items-center gap-3">
+                        <button
+                          aria-label={t("tanda_view.product.edit_price")}
+                          className="text-neutral-300 transition hover:text-violet-200"
+                          onClick={() => onEdit(product)}
+                          type="button"
+                        >
+                          <Pencil aria-hidden="true" className="size-4" />
+                        </button>
+                        <button
+                          aria-label={t("tanda_view.product.delete")}
+                          className="text-rose-400 transition hover:text-rose-200"
+                          onClick={() => onDelete(product.code)}
+                          type="button"
+                        >
+                          <Trash2 aria-hidden="true" className="size-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -501,18 +471,14 @@ function PaymentCountStep({
   return (
     <div className="max-w-md space-y-3">
       <p className="text-sm text-neutral-300">{t("tanda_view.payment_count.question")}</p>
-      <select
-        className="h-11 w-full rounded-xl border border-white/10 bg-neutral-950/60 px-4 text-sm text-white outline-none transition focus:border-violet-400/60 focus:ring-2 focus:ring-violet-500/20"
+      <input
+        className="h-11 w-full rounded-xl border border-white/10 bg-neutral-950/60 px-4 text-sm text-white outline-none transition placeholder:text-neutral-500 focus:border-violet-400/60 focus:ring-2 focus:ring-violet-500/20"
+        min={1}
         onChange={(event) => onChange(event.target.value)}
+        placeholder={t("tanda_view.payment_count.placeholder")}
+        type="number"
         value={paymentCount}
-      >
-        <option value="">{t("tanda_view.payment_count.placeholder")}</option>
-        {Array.from({ length: 9 }, (_, index) => String(index + 2)).map((value) => (
-          <option key={value} value={value}>
-            {value}
-          </option>
-        ))}
-      </select>
+      />
     </div>
   );
 }
@@ -527,28 +493,28 @@ function PaymentFrequencyStep({
   return (
     <div className="max-w-md space-y-3">
       <p className="text-sm text-neutral-300">{t("tanda_view.payment_frequency.question")}</p>
-      <select
-        className="h-11 w-full rounded-xl border border-violet-400/40 bg-neutral-950/60 px-4 text-sm text-white outline-none transition focus:border-violet-400/60 focus:ring-2 focus:ring-violet-500/20"
+      <input
+        className="h-11 w-full rounded-xl border border-violet-400/40 bg-neutral-950/60 px-4 text-sm text-white outline-none transition placeholder:text-neutral-500 focus:border-violet-400/60 focus:ring-2 focus:ring-violet-500/20"
+        max={15}
+        min={3}
         onChange={(event) => onChange(event.target.value)}
+        placeholder={t("tanda_view.payment_frequency.placeholder")}
+        type="number"
         value={paymentFrequency}
-      >
-        <option value="">{t("tanda_view.payment_frequency.placeholder")}</option>
-        {frequencyOptions.map((option) => (
-          <option key={option} value={option}>
-            {option}
-          </option>
-        ))}
-      </select>
+      />
+      <p className="text-xs text-neutral-500">{t("tanda_view.payment_frequency.help")}</p>
     </div>
   );
 }
 
 function FirstPaymentDateStep({
   firstPaymentDate,
+  minDate,
   onChange,
   onSave,
 }: {
   firstPaymentDate: string;
+  minDate: string;
   onChange: (value: string) => void;
   onSave: () => void;
 }) {
@@ -563,6 +529,7 @@ function FirstPaymentDateStep({
           />
           <input
             className="h-11 w-full rounded-xl border border-white/10 bg-neutral-950/60 px-10 text-sm text-white outline-none transition [color-scheme:dark] placeholder:text-neutral-500 focus:border-violet-400/60 focus:ring-2 focus:ring-violet-500/20"
+            min={minDate}
             onChange={(event) => onChange(event.target.value)}
             placeholder={t("tanda_view.first_payment_date.placeholder")}
             type="date"
@@ -584,21 +551,38 @@ function FirstPaymentDateStep({
 }
 
 function SummaryStep({
+  canSubmit,
   firstPaymentDate,
+  isSubmitting,
+  onCancel,
+  onConfirm,
   paymentCount,
   paymentFrequency,
   products,
   selectedClient,
 }: {
+  canSubmit: boolean;
   firstPaymentDate: string;
+  isSubmitting: boolean;
+  onCancel: () => void;
+  onConfirm: () => void;
   paymentCount: string;
   paymentFrequency: string;
-  products: ProductRow[];
-  selectedClient: string | null;
+  products: TandaProductRow[];
+  selectedClient: ClientDto | null;
 }) {
-  const formattedDate = firstPaymentDate ? formatDate(firstPaymentDate) : t("tanda_view.summary.pending");
+  const formattedDate = firstPaymentDate
+    ? formatDate(firstPaymentDate)
+    : t("tanda_view.summary.pending");
   const count = paymentCount || t("tanda_view.summary.pending");
-  const days = paymentFrequency || t("tanda_view.summary.pending");
+  const days = paymentFrequency
+    ? t("tanda_view.summary.days_suffix", { days: paymentFrequency })
+    : t("tanda_view.summary.pending");
+  const total = products.reduce((currentTotal, product) => {
+    const price = Number(product.price);
+
+    return Number.isFinite(price) ? currentTotal + price * product.quantity : currentTotal;
+  }, 0);
 
   return (
     <div className="space-y-5">
@@ -607,7 +591,7 @@ function SummaryStep({
         <p className="mt-2 text-sm text-neutral-300">
           {t("tanda_view.summary.client_label")}:{" "}
           <span className="font-medium text-violet-100">
-            {selectedClient ?? t("tanda_view.summary.pending")}
+            {selectedClient?.name ?? t("tanda_view.summary.pending")}
           </span>
         </p>
       </section>
@@ -618,7 +602,7 @@ function SummaryStep({
         </p>
         <div className="overflow-hidden rounded-2xl border border-white/10">
           <div className="overflow-x-auto">
-            <table className="min-w-[32rem] w-full border-collapse text-left text-sm">
+            <table className="min-w-[36rem] w-full border-collapse text-left text-sm">
               <thead className="bg-white/[0.04] text-xs uppercase tracking-wide text-neutral-500">
                 <tr>
                   <th className="px-4 py-4 font-semibold">{t("tanda_view.product.columns.id")}</th>
@@ -626,16 +610,27 @@ function SummaryStep({
                     {t("tanda_view.product.columns.name")}
                   </th>
                   <th className="px-4 py-4 font-semibold">
+                    {t("tanda_view.product.columns.quantity")}
+                  </th>
+                  <th className="px-4 py-4 font-semibold">
                     {t("tanda_view.product.columns.price")}
                   </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/10">
+                {products.length === 0 ? (
+                  <tr>
+                    <td className="px-4 py-5 text-neutral-400" colSpan={4}>
+                      {t("tanda_view.product.empty")}
+                    </td>
+                  </tr>
+                ) : null}
                 {products.map((product) => (
-                  <tr key={product.id}>
-                    <td className="px-4 py-4 text-neutral-300">{product.id}</td>
+                  <tr key={product.code}>
+                    <td className="px-4 py-4 text-neutral-300">{product.code}</td>
                     <td className="px-4 py-4 font-medium text-neutral-100">{product.name}</td>
-                    <td className="px-4 py-4 text-neutral-300">{product.price}</td>
+                    <td className="px-4 py-4 text-neutral-300">{product.quantity}</td>
+                    <td className="px-4 py-4 text-neutral-300">{formatMoney(product.price)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -655,27 +650,183 @@ function SummaryStep({
             days,
           })}
         </p>
+        <p className="mt-3 text-sm font-semibold text-violet-100">
+          {t("tanda_view.summary.total")}:{" "}
+          {products.length > 0 ? formatMoney(total) : t("tanda_view.summary.pending")}
+        </p>
+      </section>
+
+      <section className="rounded-2xl border border-white/10 bg-white/[0.035] p-4">
+        <p className="mb-3 text-sm font-semibold text-white">
+          {t("tanda_view.summary.payments_title")}
+        </p>
+        <p className="text-sm text-neutral-400">
+          {t("tanda_view.summary.backend_pending")}
+        </p>
       </section>
 
       <div className="flex flex-col-reverse gap-3 border-t border-white/10 pt-5 sm:flex-row sm:justify-end">
         <button
           className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-rose-400/20 bg-rose-500/10 px-5 text-sm font-semibold text-rose-100 transition hover:bg-rose-500/15"
+          onClick={onCancel}
           type="button"
         >
           <X aria-hidden="true" className="size-4" />
           {t("tanda_view.summary.cancel")}
         </button>
         <button
-          className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 px-5 text-sm font-semibold text-white shadow-lg shadow-violet-950/30 transition hover:from-violet-500 hover:to-indigo-500"
+          className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 px-5 text-sm font-semibold text-white shadow-lg shadow-violet-950/30 transition hover:from-violet-500 hover:to-indigo-500 disabled:cursor-not-allowed disabled:opacity-50"
+          disabled={!canSubmit || isSubmitting}
+          onClick={onConfirm}
           type="button"
         >
           <Check aria-hidden="true" className="size-4" />
-          {t("tanda_view.summary.confirm")}
+          {isSubmitting ? t("tanda_view.summary.submitting") : t("tanda_view.summary.confirm")}
         </button>
       </div>
     </div>
   );
 }
+
+function ConfirmCreateTandaDialog({
+  isSubmitting,
+  onCancel,
+  onConfirm,
+  selectedClient,
+}: {
+  isSubmitting: boolean;
+  onCancel: () => void;
+  onConfirm: () => void;
+  selectedClient: ClientDto | null;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 px-4 py-6 backdrop-blur-sm">
+      <div className="w-full max-w-md rounded-3xl border border-white/10 bg-[#090c19]/95 p-5 shadow-2xl shadow-black/40">
+        <div className="mb-5 flex items-center justify-between gap-4">
+          <h2 className="text-xl font-semibold">{t("tanda_view.confirm.title")}</h2>
+          <button
+            aria-label={t("tanda_view.confirm.cancel")}
+            className="grid size-9 place-items-center rounded-full border border-white/10 bg-white/[0.04] text-neutral-300 transition hover:bg-white/10 hover:text-white"
+            onClick={onCancel}
+            type="button"
+          >
+            <X aria-hidden="true" className="size-4" />
+          </button>
+        </div>
+        <p className="text-sm leading-6 text-neutral-300">
+          {t("tanda_view.confirm.text", {
+            client: selectedClient?.name ?? t("tanda_view.summary.pending"),
+          })}
+        </p>
+        <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+          <button
+            className="inline-flex h-10 items-center justify-center rounded-xl border border-white/10 bg-white/[0.04] px-4 text-sm font-semibold text-neutral-200 transition hover:bg-white/10"
+            onClick={onCancel}
+            type="button"
+          >
+            {t("tanda_view.confirm.cancel")}
+          </button>
+          <button
+            className="inline-flex h-10 items-center justify-center rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 px-4 text-sm font-semibold text-white shadow-lg shadow-violet-950/30 transition hover:from-violet-500 hover:to-indigo-500 disabled:cursor-not-allowed disabled:opacity-60"
+            disabled={isSubmitting}
+            onClick={onConfirm}
+            type="button"
+          >
+            {isSubmitting ? t("tanda_view.summary.submitting") : t("tanda_view.confirm.accept")}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CreateClientDialog({
+  isSubmitting,
+  name,
+  onCancel,
+  onConfirm,
+  onNameChange,
+}: {
+  isSubmitting: boolean;
+  name: string;
+  onCancel: () => void;
+  onConfirm: () => void;
+  onNameChange: (value: string) => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 px-4 py-6 backdrop-blur-sm">
+      <div className="w-full max-w-md rounded-3xl border border-white/10 bg-[#090c19]/95 p-5 shadow-2xl shadow-black/40">
+        <div className="mb-5 flex items-center justify-between gap-4">
+          <h2 className="text-xl font-semibold">{t("tanda_view.client_dialog.title")}</h2>
+          <button
+            aria-label={t("tanda_view.client_dialog.cancel")}
+            className="grid size-9 place-items-center rounded-full border border-white/10 bg-white/[0.04] text-neutral-300 transition hover:bg-white/10 hover:text-white"
+            disabled={isSubmitting}
+            onClick={onCancel}
+            type="button"
+          >
+            <X aria-hidden="true" className="size-4" />
+          </button>
+        </div>
+
+        <label className="block text-sm font-medium text-neutral-300" htmlFor="new-client-name">
+          {t("tanda_view.client_dialog.name_label")}
+        </label>
+        <input
+          autoFocus
+          className="mt-2 h-11 w-full rounded-xl border border-white/10 bg-neutral-950/60 px-4 text-sm text-white outline-none transition placeholder:text-neutral-500 focus:border-violet-400/60 focus:ring-2 focus:ring-violet-500/20"
+          disabled={isSubmitting}
+          id="new-client-name"
+          maxLength={120}
+          onChange={(event) => onNameChange(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" && name.trim()) {
+              onConfirm();
+            }
+          }}
+          placeholder={t("tanda_view.client_dialog.name_placeholder")}
+          value={name}
+        />
+
+        <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+          <button
+            className="inline-flex h-10 items-center justify-center rounded-xl border border-white/10 bg-white/[0.04] px-4 text-sm font-semibold text-neutral-200 transition hover:bg-white/10 disabled:opacity-60"
+            disabled={isSubmitting}
+            onClick={onCancel}
+            type="button"
+          >
+            {t("tanda_view.client_dialog.cancel")}
+          </button>
+          <button
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 px-4 text-sm font-semibold text-white shadow-lg shadow-violet-950/30 transition hover:from-violet-500 hover:to-indigo-500 disabled:cursor-not-allowed disabled:opacity-60"
+            disabled={isSubmitting || !name.trim()}
+            onClick={onConfirm}
+            type="button"
+          >
+            <Plus aria-hidden="true" className="size-4" />
+            {isSubmitting
+              ? t("tanda_view.client_dialog.submitting")
+              : t("tanda_view.client_dialog.confirm")}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const canOpenStep = (step: StepId, completedSteps: Set<StepId>) => {
+  if (step === 1 || step === 6) {
+    return true;
+  }
+
+  for (let currentStep = 1; currentStep < step; currentStep += 1) {
+    if (!completedSteps.has(currentStep as StepId)) {
+      return false;
+    }
+  }
+
+  return true;
+};
 
 function formatDate(value: string) {
   const [year, month, day] = value.split("-");
@@ -685,4 +836,17 @@ function formatDate(value: string) {
   }
 
   return `${day}/${month}/${year}`;
+}
+
+function formatMoney(value: number | string) {
+  if (!value) {
+    return t("tanda_view.summary.pending");
+  }
+
+  return new Intl.NumberFormat("es-MX", {
+    currency: "MXN",
+    maximumFractionDigits: 2,
+    minimumFractionDigits: 2,
+    style: "currency",
+  }).format(Number(value));
 }

@@ -6,8 +6,10 @@
   "packageManager": "pnpm@11.1.2",
   "scripts": {
     "dev": "prisma generate && tsx src/server.ts",
+    "dev:worker:tanda": "prisma generate && tsx src/workers/tanda-build.worker.ts",
     "build": "prisma generate && tsc",
     "start": "node dist/src/server.js",
+    "start:worker:tanda": "node dist/src/workers/tanda-build.worker.js",
     "prisma": "prisma",
     "seed": "tsx prisma/seed.ts",
     "test": "vitest run",

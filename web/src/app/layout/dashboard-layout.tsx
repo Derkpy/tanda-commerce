@@ -49,6 +49,12 @@ export function DashboardLayout({ children }: PropsWithChildren) {
       : sidebarMode === "collapsed"
         ? "lg:pl-20"
         : "lg:pl-0";
+  const currentNavigationLabel =
+    location.pathname === "/app"
+      ? t("menu.dashboard")
+      : (navigationItems.find(
+          (item) => item.path !== "/app" && location.pathname.startsWith(item.path),
+        )?.label ?? t("menu.dashboard"));
 
   useEffect(() => {
     let lastScrollY = window.scrollY;
@@ -253,7 +259,7 @@ export function DashboardLayout({ children }: PropsWithChildren) {
               </div>
 
               <div className="hidden min-w-0 sm:block">
-                <p className="text-md text-neutral-500">{t("menu.dashboard")}</p>
+                <p className="text-md text-neutral-500">{currentNavigationLabel}</p>
               </div>
 
               <div className="ml-auto flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] p-1">
