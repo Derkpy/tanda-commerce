@@ -74,6 +74,21 @@ class RedisCache {
     }
   }
 
+  static async ping(): Promise<boolean> {
+    const client = await RedisCache.getClient();
+
+    if (!client) {
+      return false;
+    }
+
+    try {
+      return (await client.ping()) === "PONG";
+    } catch (error) {
+      logger.warn({ error }, "Redis ping failed");
+      return false;
+    }
+  }
+
   static async disconnect(): Promise<void> {
     const client = RedisCache.client;
     RedisCache.client = null;
@@ -108,6 +123,7 @@ class RedisCache {
     const client = createClient({
       url: env.REDIS_URL,
       socket: {
+        connectTimeout: 5_000,
         reconnectStrategy: false,
       },
     });

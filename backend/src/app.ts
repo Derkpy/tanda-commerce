@@ -7,6 +7,8 @@ import helmet from "helmet";
 import { pinoHttp } from "pino-http";
 import { env } from "./config/env.js";
 import { logger } from "./config/logger.js";
+import { prisma } from "./config/prisma.js";
+import { redisCache } from "./config/redis.js";
 import { errorHandler, notFoundHandler } from "./middleware/error-handler.js";
 import { createApiRouter } from "./routes/index.js";
 
@@ -30,6 +32,8 @@ const corsOptions: CorsOptions = {
   optionsSuccessStatus: 204,
 };
 
+const mutationMethods = new Set(["DELETE", "PATCH", "POST", "PUT"]);
+
 export const createApp = () => {
   const app = express();
   const apiRateLimiter = rateLimit({
@@ -45,6 +49,21 @@ export const createApp = () => {
 
   app.use(helmet());
   app.use(cors(corsOptions));
+  app.use((req, res, next) => {
+    const origin = req.get("origin");
+
+    if (
+      env.NODE_ENV === "production" &&
+      mutationMethods.has(req.method) &&
+      origin &&
+      !allowedOrigins.has(origin)
+    ) {
+      res.status(403).json({ error: "Origin not allowed" });
+      return;
+    }
+
+    next();
+  });
   app.use(pinoHttp({ logger }));
   app.use(compression());
   app.use("/api", apiRateLimiter);
@@ -53,6 +72,23 @@ export const createApp = () => {
 
   app.get("/health", (_req, res) => {
     res.json({ status: "ok" });
+  });
+
+  app.get("/health/ready", async (_req, res) => {
+    try {
+      await prisma.$queryRaw`SELECT 1`;
+      const redisReady = await redisCache.ping();
+
+      if (!redisReady) {
+        res.status(503).json({ status: "not_ready" });
+        return;
+      }
+
+      res.json({ status: "ready" });
+    } catch (error) {
+      logger.warn({ error }, "Readiness check failed");
+      res.status(503).json({ status: "not_ready" });
+    }
   });
 
   app.use("/api", createApiRouter());

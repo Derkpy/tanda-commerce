@@ -107,5 +107,86 @@ jobs:
       - name: Docker build backend
         run: docker build -f backend/Dockerfile -t system-tandas-backend:ci .
 
+      - name: Docker runtime smoke test backend and worker
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          cleanup() {
+            docker rm -f system-tandas-backend-smoke system-tandas-worker-smoke >/dev/null 2>&1 || true
+          }
+
+          trap cleanup EXIT
+
+          docker run --rm \
+            --network host \
+            --entrypoint node_modules/.bin/prisma \
+            --env DATABASE_URL \
+            system-tandas-backend:ci \
+            migrate status
+
+          docker run -d \
+            --name system-tandas-backend-smoke \
+            --network host \
+            --env NODE_ENV \
+            --env PORT=3000 \
+            --env DATABASE_URL \
+            --env REDIS_URL \
+            --env CACHE_TTL_SECONDS \
+            --env FRONTEND_URL \
+            --env CORS_ORIGINS \
+            --env REQUEST_BODY_LIMIT \
+            --env RATE_LIMIT_WINDOW_MS \
+            --env RATE_LIMIT_MAX \
+            --env AUTH_RATE_LIMIT_WINDOW_MS \
+            --env AUTH_LOGIN_RATE_LIMIT_MAX \
+            --env AUTH_REFRESH_RATE_LIMIT_MAX \
+            --env COOKIE_SAME_SITE \
+            --env JWT_ACCESS_SECRET \
+            --env JWT_ACCESS_TTL_SECONDS \
+            --env JWT_REFRESH_SECRET \
+            --env JWT_REFRESH_TTL_SECONDS \
+            system-tandas-backend:ci
+
+          for attempt in {1..20}; do
+            if curl --fail --silent http://127.0.0.1:3000/health/ready; then
+              break
+            fi
+
+            if [ "$attempt" -eq 20 ]; then
+              docker logs system-tandas-backend-smoke
+              exit 1
+            fi
+
+            sleep 1
+          done
+
+          docker run -d \
+            --name system-tandas-worker-smoke \
+            --network host \
+            --entrypoint node \
+            --env NODE_ENV \
+            --env DATABASE_URL \
+            --env REDIS_URL \
+            --env CACHE_TTL_SECONDS \
+            --env FRONTEND_URL \
+            --env CORS_ORIGINS \
+            --env REQUEST_BODY_LIMIT \
+            --env RATE_LIMIT_WINDOW_MS \
+            --env RATE_LIMIT_MAX \
+            --env AUTH_RATE_LIMIT_WINDOW_MS \
+            --env AUTH_LOGIN_RATE_LIMIT_MAX \
+            --env AUTH_REFRESH_RATE_LIMIT_MAX \
+            --env COOKIE_SAME_SITE \
+            --env JWT_ACCESS_SECRET \
+            --env JWT_ACCESS_TTL_SECONDS \
+            --env JWT_REFRESH_SECRET \
+            --env JWT_REFRESH_TTL_SECONDS \
+            system-tandas-backend:ci \
+            dist/src/workers/tanda-build.worker.js
+
+          sleep 5
+          test "$(docker inspect --format='{{.State.Running}}' system-tandas-worker-smoke)" = "true"
+
       - name: Docker build web
         run: docker build -f web/Dockerfile -t system-tandas-web:ci .

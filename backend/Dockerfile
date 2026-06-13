@@ -36,6 +36,7 @@ COPY backend/package.json backend/package.json
 COPY --from=build /app/backend/dist backend/dist
 COPY --from=build /app/backend/generated backend/generated
 COPY --from=build /app/backend/prisma backend/prisma
+COPY --from=build /app/backend/prisma.config.ts backend/prisma.config.ts
 
 WORKDIR /app/backend
 
