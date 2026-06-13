@@ -42,4 +42,4 @@ WORKDIR /app/backend
 
 EXPOSE 3000
 
-CMD ["node", "dist/src/server.js"]
+CMD ["sh", "-c", "if [ \"$SERVICE_ROLE\" = \"worker\" ]; then exec node dist/src/workers/tanda-build.worker.js; else exec node dist/src/server.js; fi"]
